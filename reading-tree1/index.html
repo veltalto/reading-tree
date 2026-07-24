@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Tree</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header: Level & Settings -->
+        <header class="game-header" id="main-header">
+            <div class="level-container">
+                <div class="level-bar-bg">
+                    <div class="level-bar-fill" id="exp-bar" style="width: 0%;"></div>
+                </div>
+                <div class="level-info">
+                    <span class="level-text">Lv.<span id="level-display">1</span></span>
+                    <span class="next-level-text">あと<span id="next-level-exp">100</span>EXP</span>
+                </div>
+            </div>
+
+        </header>
+
+        <!-- INTRO LAYER -->
+        <div id="intro-layer" class="intro-layer hidden">
+            <button class="music-toggle" id="intro-music-toggle">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                </svg>
+            </button>
+            <h1 class="intro-title">Reading Tree</h1>
+            <div class="supporter-container">
+                <div class="supporter-icon">
+                    <img src="assets/supporter.png" alt="Supporter" class="supporter-img">
+                    <button id="change-supporter-btn" class="change-supporter-btn" title="サポーター変更">✏️</button>
+                </div>
+            </div>
+            <!-- サポーター選択画面（初回のみ） -->
+            <div id="supporter-select-screen" class="supporter-select-screen hidden">
+                <p class="supporter-select-title">サポーターを選んでね！</p>
+                <div class="supporter-select-grid">
+                    <div class="supporter-option" data-id="0">
+                        <img src="assets/supporter.png" alt="サポーター1">
+                        <span>ツリーさん</span>
+                    </div>
+                    <div class="supporter-option" data-id="1">
+                        <img src="assets/sup2-1.png" alt="サポーター2">
+                        <span>リーフさん</span>
+                    </div>
+                    <div class="supporter-option" data-id="2">
+                        <img src="assets/sup3-1.png" alt="サポーター3">
+                        <span>たいよう</span>
+                    </div>
+                    <div class="supporter-option" data-id="3">
+                        <img src="assets/sup4-1.png" alt="サポーター4">
+                        <span>ぽー太</span>
+                    </div>
+                </div>
+                <button id="supporter-select-btn" class="btn btn-primary intro-btn" disabled>決定</button>
+            </div>
+
+            <div class="intro-controls">
+                <button id="intro-start-btn" class="btn btn-primary intro-btn">始める</button>
+                <div id="intro-dialogue" class="intro-dialogue hidden">
+                    <p id="intro-text"></p>
+                </div>
+                <div class="intro-nav-buttons hidden" id="intro-nav-container">
+                    <button id="intro-back-btn" class="nav-triangle-btn">◀</button>
+                    <button id="intro-next-btn" class="nav-triangle-btn">▶</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Tree Display -->
+        <main class="tree-stage" id="tree-container">
+            <!-- Message Bubble (Moved Here) -->
+            <div class="message-area hidden" id="main-message-area">
+                <div class="message-bubble">
+                    <p id="welcome-message">...</p>
+                </div>
+            </div>
+
+            <!-- Dynamic Tree Visuals -->
+            <div class="tree-placeholder" id="main-tree">
+                <!-- Stage 1: Seed (Level 1) -->
+                <svg viewBox="0 0 120 140" class="tree-svg tree-seed hidden">
+                    <defs>
+                        <!-- Soft drop shadow -->
+                        <filter id="soft-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.15" />
+                        </filter>
+                        <!-- Seed gradient -->
+                        <linearGradient id="seed-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#d7ccc8" />
+                            <stop offset="100%" stop-color="#8d6e63" />
+                        </linearGradient>
+                         
+                        <!-- Ground gradient -->
+                        <linearGradient id="ground-grad-seed" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#ffb74d" class="ground-color-stop1" />
+                            <stop offset="100%" stop-color="#e65100" class="ground-color-stop2" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Soil Shadow -->
+                    <ellipse cx="60" cy="120" rx="45" ry="10" fill="#e0e0e0" />
+                    
+                    <!-- Ground Hill -->
+                    <path d="M15,115 Q60,95 105,115 L100,132 Q60,135 20,132 Z" fill="url(#ground-grad-seed)" class="tree-ground" filter="url(#soft-shadow)" />
+                    <!-- Soil Area (where seed sits) -->
+                    <ellipse cx="60" cy="112" rx="22" ry="6" fill="#5D4037" />
+                   
+                    <!-- Soil details (fluffy specks) -->
+                    <circle cx="48" cy="112" r="1.5" fill="#3E2723" />
+                    <circle cx="72" cy="113" r="1" fill="#3E2723" />
+                    <circle cx="60" cy="111" r="2" fill="#3E2723" />
+                    <!-- Seed Shell -->
+                    <g transform="translate(60, 102)" filter="url(#soft-shadow)">
+                       
+                         <!-- Seed body -->
+                        <path d="M-12,0 C-12,-15 0,-20 0,-20 C0,-20 12,-15 12,0 C12,12 8,16 0,16 C-8,16 -12,12 -12,0 Z" fill="url(#seed-grad)" />
+                        <!-- Seed cap/texture -->
+                        <path d="M-12,0 C-12,-7 -6,-10 0,-10 C6,-10 12,-7 12,0 C12,3 8,5 0,5 C-8,5 -12,3 -12,0 Z" fill="#5d4037" opacity="0.3" />
+                        <!-- Shiny Highlight -->
+                        <ellipse cx="-4" cy="-5" rx="3" ry="5" fill="#ffffff" opacity="0.4" transform="rotate(-15 -4 -5)" />
+                        <!-- Tiny Sprout emerging -->
+                        <path d="M0,-20 Q-5,-28 -2,-32 Q2,-28 0,-20" fill="#88c425" />
+                        <path d="M0,-20 Q5,-26 8,-28 Q6,-23 0,-20" fill="#a8e6cf" />
+                    </g>
+                </svg>
+
+                <!-- Stage 2: Sprout (Level 2-4) -->
+                <svg viewBox="0 0 120 140" class="tree-svg tree-sprout hidden">
+                    <defs>
+                        <filter id="soft-shadow-sprout" x="-10%" y="-10%" width="120%" height="120%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.15" />
+                        </filter>
+                        <!-- Stem gradient -->
+                        <linearGradient id="stem-grad" x1="0%" y1="100%" x2="0%" y2="0%">
+                            <stop offset="0%" stop-color="#4caf50" />
+                            <stop offset="100%" stop-color="#8bc34a" />
+                        </linearGradient>
+                        <!-- Ground gradient -->
+                        <linearGradient id="ground-grad-sprout" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#ffb74d" class="ground-color-stop1" />
+                            <stop offset="100%" stop-color="#e65100" class="ground-color-stop2" />
+                        </linearGradient>
+                        <!-- Leaf Left gradient -->
+                        <linearGradient id="leaf-l-grad" x1="100%" y1="100%" x2="0%" y2="0%">
+                            <stop offset="0%" stop-color="#4caf50" />
+                            <stop offset="100%" stop-color="#ccff90" />
+                        </linearGradient>
+                        <!-- Leaf Right gradient -->
+                        <linearGradient id="leaf-r-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#388e3c" />
+                            <stop offset="100%" stop-color="#a7ffeb" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Soil Shadow -->
+                    <ellipse cx="60" cy="120" rx="45" ry="10" fill="#e0e0e0" />
+                    <!-- Ground Hill -->
+                    <path d="M15,115 Q60,95 105,115 L100,132 Q60,135 20,132 Z" fill="url(#ground-grad-sprout)" class="tree-ground" filter="url(#soft-shadow-sprout)" />
+                    <!-- Small soil base for sprout -->
+                    <ellipse cx="60" cy="112" rx="15" ry="4" fill="#5D4037" />
+
+                    <!-- Stem (Thicker, curvy) -->
+                    <path d="M60,112 Q57,85 62,60" fill="none" stroke="url(#stem-grad)" stroke-width="6" stroke-linecap="round" />
+                        
+                    <!-- Sprout Plant -->
+                    <g class="sprout-plant-group" filter="url(#soft-shadow-sprout)">
+                        
+                        <!-- Leaf Left -->
+                        <g transform="translate(62, 60)">
+                            <path d="M0,0 Q-25,-5 -28,-22 Q-10,-25 0,0" fill="url(#leaf-l-grad)" />
+                            <!-- Leaf vein / highlight -->
+                            <path d="M-3,-2 Q-15,-10 -20,-16" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+                        </g>
+                        
+                        <!-- Leaf Right -->
+                        <g transform="translate(62, 60)">
+                            <path d="M0,0 Q25,2 30,-15 Q15,-22 0,0" fill="url(#leaf-r-grad)" />
+                            <!-- Leaf vein / highlight -->
+                            <path d="M3,-2 Q15,-6 22,-11" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+                        </g>
+
+                        <!-- Little central bud -->
+                        <circle cx="62" cy="58" r="3" fill="#ffe082" />
+                    </g>
+                </svg>
+
+                <!-- Stage 3: Tree (Level 5+) -->
+                <svg viewBox="0 0 120 140" class="tree-svg tree-adult hidden">
+                    <defs>
+                        <filter id="soft-shadow-adult" x="-10%" y="-10%" width="120%" height="120%">
+                            <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.15" />
+                        </filter>
+                        <!-- Ground gradient -->
+                        <linearGradient id="ground-grad-adult" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#ffb74d" class="ground-color-stop1" />
+                            <stop offset="100%" stop-color="#e65100" class="ground-color-stop2" />
+                        </linearGradient>
+                        <!-- Trunk gradient -->
+                        <linearGradient id="trunk-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#5D4037" />
+                            <stop offset="50%" stop-color="#795548" />
+                            <stop offset="100%" stop-color="#4E342E" />
+                        </linearGradient>
+                        <!-- Crown gradient (dynamic) -->
+                        <linearGradient id="crown-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#a8e6cf" id="crown-stop-light" />
+                            <stop offset="100%" stop-color="#56ab2f" id="crown-stop-dark" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Soil Shadow -->
+                    <ellipse cx="60" cy="120" rx="45" ry="10" fill="#e0e0e0" />
+                    <!-- Ground Hill -->
+                    <path d="M15,115 Q60,95 105,115 L100,132 Q60,135 20,132 Z" fill="url(#ground-grad-adult)" class="tree-ground" filter="url(#soft-shadow-adult)" />
+                    <!-- Small soil base under tree trunk -->
+                    <ellipse cx="60" cy="112" rx="18" ry="4" fill="#5D4037" />
+
+                    <!-- Tree Body -->
+                    <g class="tree-body-group" filter="url(#soft-shadow-adult)">
+                        <!-- Trunk (Thick, organic) -->
+                        <path d="M54,112 L55,65 Q50,60 45,55 Q55,50 60,65 L66,112 Z" fill="url(#trunk-grad)" />
+                        <!-- Branch L -->
+                        <path d="M55,68 Q40,60 38,50 Q45,52 52,62 Z" fill="url(#trunk-grad)" />
+                        <!-- Branch R -->
+                        <path d="M60,66 Q72,60 78,52 Q72,55 62,62 Z" fill="url(#trunk-grad)" />
+
+                        <!-- Crown (Multiple layers for depth and cloud-like cute fluffiness) -->
+                        <!-- Base Dark Layer -->
+                        <path d="M35,65 C20,65 15,45 25,35 C15,20 35,10 50,20 C65,10 85,20 75,35 C85,45 80,65 65,65 C60,72 40,72 35,65 Z" fill="url(#crown-grad)" class="tree-crown" />
+                        <!-- Foreground Highlights / Depth shapes -->
+                        <path d="M38,55 C28,55 25,42 32,35 C28,26 40,18 50,26 C60,18 72,26 68,35 C75,42 72,55 62,55 Z" fill="#ffffff" opacity="0.12" />
+                        <ellipse cx="50" cy="30" rx="15" ry="12" fill="#ffffff" opacity="0.1" />
+
+                        <!-- Dynamic Decorators Group -->
+                        <g class="tree-decorators"></g>
+                    </g>
+                </svg>
+            </div>
+        </main>
+
+        <!-- Interactions -->
+        <section class="action-buttons">
+            <button class="btn btn-primary" id="start-task-btn">読書開始</button>
+            <button class="btn btn-secondary" id="show-records-btn">表示</button>
+        </section>
+
+        <!-- BOOK SETUP MODAL -->
+        <div id="book-setup-modal" class="modal-backdrop hidden">
+            <div class="modal-content">
+                <h2>新しい本を読む</h2>
+                <div class="input-group">
+                    <label for="book-title-input" style="display: block; margin-bottom: 6px; font-weight: bold; color: #5D4037;">本のタイトル</label>
+                    <input type="text" id="book-title-input" placeholder="例: 星の王子さま" style="width: 100%; padding: 10px; border: 2px solid #dfe6e9; border-radius: 8px; font-family: 'Zen Maru Gothic', sans-serif;">
+                </div>
+                <div class="input-group">
+                    <label for="book-total-pages-input" style="display: block; margin-bottom: 6px; font-weight: bold; color: #5D4037;">総ページ数</label>
+                    <div class="result-inputs" style="justify-content: center;">
+                        <input type="number" id="book-total-pages-input" placeholder="例: 300 (100以上)" min="100">
+                        <span>ページ</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-text" id="cancel-book-setup-btn">キャンセル</button>
+                    <button class="btn btn-primary" id="start-book-btn">決定</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONCENTRATION MODE SETUP -->
+        <div id="concentration-setup" class="modal-backdrop hidden">
+            <div class="modal-content">
+                <h2>目標を設定</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" data-target="time">時間</button>
+                    <button class="tab-btn" data-target="pages">ページ数</button>
+                </div>
+
+                <div id="setup-time" class="setup-panel">
+                    <label>目標時間 (分)</label>
+                    <div class="time-presets">
+                        <button class="preset-btn" data-time="15">15分</button>
+                        <button class="preset-btn selected" data-time="30">30分</button>
+                        <button class="preset-btn" data-time="60">60分</button>
+                    </div>
+                    <input type="number" id="target-time-input" value="30" min="1">
+                </div>
+
+                <div id="setup-pages" class="setup-panel hidden">
+                    <label>目標ページ数</label>
+                    <input type="number" id="target-pages-input" value="20" min="1">
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-text" id="cancel-setup-btn">キャンセル</button>
+                    <button class="btn btn-primary" id="start-session-btn">読書開始</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONCENTRATION MODE ACTIVE -->
+        <div id="concentration-mode" class="concentration-layer hidden">
+            <!-- Background / Atmosphere -->
+            <div class="concentration-bg"></div>
+
+            <div class="concentration-content">
+                <div class="reading-leaves" id="reading-leaves"></div>
+                <div class="relaxed-character" id="reading-character-wrap">
+                    <img src="" alt="Supporter" class="supporter-img-reading" id="reading-supporter-img">
+                </div>
+
+                <div class="timer-display" id="session-timer">00:00</div>
+
+
+
+                <p class="focus-message">読書中...</p>
+            </div>
+
+            <button class="btn btn-stop" id="stop-session-btn">長押しで終了</button>
+        </div>
+
+        <!-- RESULT MODAL -->
+        <div id="result-modal" class="modal-backdrop hidden">
+            <div class="modal-content">
+                <h2>読書お疲れ様でした</h2>
+
+                <div class="input-group">
+                    <label>本日の成果</label>
+                    <div class="result-inputs">
+                        <input type="number" id="result-pages" placeholder="読んだページ数" min="0">
+                        <span>ページ</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>一言メモ</label>
+                    <textarea id="result-note" placeholder="感想や心に残った言葉..." rows="3"></textarea>
+                </div>
+
+                <div class="reward-preview hidden" id="reward-preview">
+                    <p>獲得EXP: <span id="reward-exp">0</span></p>
+                    <p>新しい葉っぱが生まれました！</p>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="save-result-btn">記録する</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECORDS MODAL -->
+        <div id="records-modal" class="modal-backdrop hidden">
+            <div class="modal-content records-content">
+                <h2>読書の記録</h2>
+                
+                <div class="tabs records-tabs" style="margin-bottom: 12px;">
+                    <button class="tab-btn active" id="tab-current-book">現在の本</button>
+                    <button class="tab-btn" id="tab-completed-books">読んだ本</button>
+                </div>
+
+                <div class="records-list-container">
+                    <!-- 現在の本の記録 -->
+                    <div id="current-book-records" class="records-sub-panel">
+                        <div id="current-book-title-display" class="current-book-title-tag"></div>
+                        <div id="records-list">
+                            <!-- Records will be injected here -->
+                            <p class="no-records">まだ記録がありません。</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 読了した本の一覧 -->
+                    <div id="completed-books-records" class="records-sub-panel hidden">
+                        <div id="completed-books-list">
+                            <!-- Completed books will be injected here -->
+                            <p class="no-records">読了した本はまだありません。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top: var(--spacing-md);">
+                    <button class="btn btn-secondary" id="close-records-btn" style="width: 100%;">閉じる</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Water/Item Overlay (Hidden by default) -->
+        <div id="item-overlay" class="hidden">
+            <!-- For future item selection -->
+        </div>
+    </div>
+
+    <!-- Modals (Initially hidden) -->
+    <div id="modal-container" class="modal-backdrop hidden">
+        <!-- Dynamic content injected here -->
+    </div>
+
+    <!-- サポーター変更モーダル -->
+    <div id="supporter-change-modal" class="modal-backdrop hidden">
+        <div class="modal-content supporter-change-modal-content">
+            <h2>サポーターを変更</h2>
+            <div class="supporter-select-grid supporter-change-grid">
+                <div class="supporter-option" data-id="0">
+                    <img src="assets/supporter.png" alt="ツリーさん">
+                    <span>ツリーさん</span>
+                </div>
+                <div class="supporter-option" data-id="1">
+                    <img src="assets/sup2-1.png" alt="リーフさん">
+                    <span>リーフさん</span>
+                </div>
+                <div class="supporter-option" data-id="2">
+                    <img src="assets/sup3-1.png" alt="たいよう">
+                    <span>たいよう</span>
+                </div>
+                <div class="supporter-option" data-id="3">
+                    <img src="assets/sup4-1.png" alt="ぽー太">
+                    <span>ぽー太</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-text" id="cancel-supporter-change-btn">キャンセル</button>
+                <button class="btn btn-primary" id="confirm-supporter-change-btn" disabled>変更する</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
