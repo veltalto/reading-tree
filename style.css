@@ -1,0 +1,1283 @@
+:root {
+    --color-bg: #fdfcf8;
+    --color-text: #4a4a4a;
+    --color-accent: #88c425;
+    /* Fresh Green */
+    --color-primary-btn: #4a90e2;
+    /* Similar to wireframe blue */
+    --color-secondary-btn: #5c6bc0;
+    --color-wood: #795548;
+    --font-main: 'Zen Maru Gothic', sans-serif;
+
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    /* Prevent scrolling on mobile-like view */
+}
+
+.app-container {
+    width: 100%;
+    max-width: 480px;
+    /* Mobile width cap */
+    height: 100%;
+    background-color: #fff;
+    /* or slightly off-white */
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Header */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    transition: opacity 0.3s;
+}
+
+.level-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: #f0f4f8;
+    padding: 8px 12px;
+    border-radius: 20px;
+}
+
+.level-bar-bg {
+    flex: 1;
+    height: 10px;
+    background: #dfe6e9;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.level-bar-fill {
+    height: 100%;
+    background: #74b9ff;
+    /* Matches wireframe blueish */
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.level-text {
+    font-weight: bold;
+    color: #2d3436;
+}
+
+
+
+/* Intro Overlay */
+.intro-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ffffff;
+    /* Fully opaque to hide underlying buttons */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.5s;
+}
+
+.intro-title {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #4CAF50;
+    /* Green */
+    margin-bottom: 2rem;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+    animation: floatTitle 3s ease-in-out infinite;
+}
+
+@keyframes floatTitle {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.music-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #4a90e2;
+    /* Blue circle */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.supporter-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.supporter-icon {
+    width: 500px;
+    height: 500px;
+    position: relative;
+}
+
+.supporter-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.1));
+}
+
+.intro-controls {
+    width: 100%;
+    margin-bottom: 80px;
+    /* Space from bottom */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.intro-btn {
+    width: 80%;
+    font-size: 1.2rem;
+}
+
+.intro-dialogue {
+    background-color: #4a90e2;
+    /* Blue bg */
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    text-align: center;
+    line-height: 1.6;
+    animation: fadeIn 0.5s ease;
+    cursor: default;
+    /* Changed from pointer since we have buttons now */
+}
+
+/* Nav Container outside the dialogue */
+.intro-nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    margin-top: 20px;
+    padding: 0 10px;
+}
+
+.intro-nav-buttons.hidden {
+    display: none;
+}
+
+/* Triangle Buttons */
+.nav-triangle-btn {
+    background: none;
+    border: none;
+    color: #4CAF50;
+    /* Green theme */
+    font-size: 2.5rem;
+    /* Large triangle */
+    cursor: pointer;
+    padding: 0 10px;
+    transition: transform 0.2s, color 0.2s;
+    line-height: 1;
+}
+
+.nav-triangle-btn:hover {
+    transform: scale(1.2);
+    color: #88c425;
+}
+
+.nav-triangle-btn:active {
+    transform: scale(0.95);
+}
+
+.nav-triangle-btn.hidden {
+    visibility: hidden;
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.nav-btn.hidden {
+    display: none;
+    /*Or visibility hidden if we want to keep space, but removing is usually better for "first page"*/
+    visibility: hidden;
+    /* Use visibility to keep layout stable if text is centered */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Message Bubble */
+.message-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    /* Space between bubble and tree */
+    width: 100%;
+    z-index: 10;
+}
+
+.message-bubble {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 16px 24px;
+    position: relative;
+    max-width: 80%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    animation: float 3s ease-in-out infinite;
+}
+
+.message-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 10px 10px 0;
+    border-style: solid;
+    border-color: #fff transparent transparent transparent;
+    z-index: 1;
+}
+
+.message-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 12px 12px 0;
+    border-style: solid;
+    border-color: #e0e0e0 transparent transparent transparent;
+    z-index: 0;
+}
+
+/* Tree Stage */
+/* Level Info */
+.level-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.next-level-text {
+    font-size: 0.7rem;
+    color: #636e72;
+    margin-top: 2px;
+}
+
+/* Tree Stage */
+.tree-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* Stack message above tree */
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.tree-placeholder {
+    width: 200px;
+    height: 240px;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tree-placeholder:active {
+    transform: scale(0.95);
+}
+
+.tree-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Visibility Toggle */
+.tree-svg.hidden {
+    display: none;
+}
+
+/* Specific Stage Animations */
+.tree-seed {
+    animation: seedPulse 3s infinite ease-in-out;
+}
+
+@keyframes seedPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.tree-sprout {
+    animation: sproutSway 4s infinite ease-in-out;
+    transform-origin: bottom center;
+}
+
+@keyframes sproutSway {
+
+    0%,
+    100% {
+        transform: rotate(-2deg);
+    }
+
+    50% {
+        transform: rotate(2deg);
+    }
+}
+
+.tree-crown {
+    transition: fill 0.5s, d 0.5s;
+}
+
+/* Tree Growth States (Legacy classes if needed + SVG visibility) */
+.tree-level-5 .tree-placeholder {
+    transform: scale(1);
+}
+
+.tree-level-6 .tree-placeholder {
+    transform: scale(1.1);
+}
+
+.tree-level-7 .tree-placeholder {
+    transform: scale(1.2);
+}
+
+/* Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    padding: 0 var(--spacing-lg);
+}
+
+.btn {
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    font-family: var(--font-main);
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+    background-color: var(--color-primary-btn);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: var(--color-secondary-btn);
+    /* Using a distinct blue/indigo */
+    color: white;
+}
+
+/* Modals */
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #2d3436;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    font-weight: bold;
+    color: #b2bec3;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    color: var(--color-primary-btn);
+    border-bottom-color: var(--color-primary-btn);
+}
+
+.setup-panel {
+    margin-bottom: 20px;
+}
+
+.setup-panel input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.1rem;
+    border: 2px solid #dfe6e9;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.page-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-range-inputs input {
+    width: 100px;
+    margin-top: 8px;
+}
+
+.time-presets {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.preset-btn {
+    flex: 1;
+    padding: 8px;
+    background: #f0f4f8;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.preset-btn.selected {
+    background: var(--color-primary-btn);
+    color: white;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #636e72;
+}
+
+.result-inputs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    /* Reduced gap */
+    width: 100%;
+}
+
+.result-inputs input {
+    flex: 1;
+    /* Share space */
+    width: auto;
+    /* Let flex handle width */
+    min-width: 0;
+    /* Prevent overflow */
+    padding: 8px;
+    /* Slightly smaller padding */
+    border: 2px solid #dfe6e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.result-inputs span {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #dfe6e9;
+    border-radius: 8px;
+    font-family: var(--font-main);
+    resize: none;
+}
+
+.reward-preview {
+    text-align: center;
+    background: #f1f8e9;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    color: #33691e;
+    font-weight: bold;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-text {
+    background: none;
+    color: #636e72;
+    box-shadow: none;
+}
+
+/* Records Modal Details */
+.records-content {
+    max-width: 400px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.records-list-container {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 10px;
+    background: #fafafa;
+}
+
+.record-item {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    border-left: 4px solid var(--color-accent);
+}
+
+.record-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #b2bec3;
+    margin-bottom: 6px;
+}
+
+.record-pages {
+    font-weight: bold;
+    color: var(--color-primary-btn);
+}
+
+.record-note {
+    font-size: 1rem;
+    color: var(--color-text);
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+.no-records {
+    text-align: center;
+    color: #81ccec;
+    margin-top: 20px;
+}
+
+/* Records Modal Details */
+.records-content {
+    max-width: 400px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.records-list-container {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 10px;
+    background: #fafafa;
+}
+
+/* Record Item (Leaf Style) */
+/* Record Item (Leaf Style) */
+.record-item {
+    background: linear-gradient(135deg, #aed581 0%, #7cb342 100%);
+    color: white;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    /* Leaf shape: Rounded Top-Left & Bottom-Right, Sharp Top-Right & Bottom-Left */
+    border-radius: 20px 0px 20px 0px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    transition: transform 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Vein effect (optional subtle decoration) */
+.record-item::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, transparent 60%, rgba(255, 255, 255, 0.1) 61%);
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.record-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #816711;
+    margin-bottom: 6px;
+}
+
+.record-pages {
+    font-weight: bold;
+    color: var(--color-primary-btn);
+}
+
+.record-note {
+    font-size: 1rem;
+    color: var(--color-text);
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+.no-records {
+    text-align: center;
+    color: #b2bec3;
+    margin-top: 20px;
+}
+
+/* Concentration Mode Active */
+.concentration-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #e3f2fd;
+    /* Softer blue for relaxing */
+    z-index: 150;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px 20px;
+}
+
+.concentration-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.relaxed-character {
+    width: 240px;
+    height: 240px;
+    position: relative;
+}
+
+.supporter-img-reading {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 読書中の葉っぱコンテナ */
+.reading-leaves {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.reading-leaf-item {
+    animation: growLeaf 0.5s forwards ease-out;
+}
+
+.timer-display {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #4a4a4a;
+    font-variant-numeric: tabular-nums;
+}
+
+.sound-toggle {
+    background: white;
+    border: 1px solid #dfe6e9;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btn-stop {
+    background: #ff7675;
+    color: white;
+    width: 100%;
+    max-width: 200px;
+    align-self: center;
+}
+
+/* Utility */
+.hidden {
+    display: none !important;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Home Screen Leaves */
+.home-leaf {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #7cb342;
+    border-radius: 0 100% 0 100%;
+    transform: rotate(-45deg);
+    opacity: 0;
+    animation: growLeaf 0.5s forwards ease-out;
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+}
+
+@keyframes growLeaf {
+    from {
+        transform: scale(0) rotate(-45deg);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1) rotate(-45deg);
+        opacity: 1;
+    }
+}
+
+/* --- Added for Book-specific records and accordions --- */
+.current-book-title-tag {
+    background-color: #f1f8e9;
+    border: 1px solid #c5e1a5;
+    color: #33691e;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    margin-bottom: 12px;
+    text-align: center;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.records-sub-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.book-accordion-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.book-accordion-item:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+.book-accordion-header {
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fbf7 100%);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.book-accordion-info {
+    flex: 1;
+}
+
+.book-accordion-title {
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: #2d3436;
+    margin-bottom: 4px;
+}
+
+.book-accordion-meta {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    display: flex;
+    gap: 12px;
+}
+
+.book-accordion-meta-date {
+    color: #95a5a6;
+}
+
+.book-accordion-arrow {
+    font-size: 0.9rem;
+    color: #bdc3c7;
+    transition: transform 0.3s ease;
+    margin-left: 10px;
+}
+
+.book-accordion-item.open .book-accordion-arrow {
+    transform: rotate(180deg);
+    color: var(--color-accent);
+}
+
+.book-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background-color: #fafafa;
+}
+
+.book-accordion-item.open .book-accordion-content {
+    max-height: 500px; /* Adjust as needed for nested logs */
+    overflow-y: auto;
+}
+
+.nested-record-list {
+    padding: 12px;
+}
+
+.nested-record-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    border-left: 3px solid var(--color-accent);
+}
+
+.nested-record-item:last-child {
+    margin-bottom: 0;
+}
+
+.nested-record-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    margin-bottom: 4px;
+}
+
+.nested-record-pages {
+    font-weight: bold;
+    color: var(--color-primary-btn);
+}
+
+.nested-record-note {
+    font-size: 0.9rem;
+    color: var(--color-text);
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
+/* --- Added for Cute Faceless Tree Animations --- */
+
+/* Seed Breathing Animation */
+.tree-seed {
+    animation: cuteBreath 3s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+@keyframes cuteBreath {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.04) translateY(-1px);
+    }
+}
+
+/* Sprout Swaying Animation (when not sprouting) */
+.tree-sprout:not(.anim-sprout-burst) {
+    animation: cuteSway 4s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+@keyframes cuteSway {
+    0%, 100% {
+        transform: rotate(-1.5deg);
+    }
+    50% {
+        transform: rotate(1.5deg) scale(1.01);
+    }
+}
+
+/* Sprout Plant Group slight independent movement */
+.tree-sprout:not(.anim-sprout-burst) .sprout-plant-group {
+    animation: plantSway 6s ease-in-out infinite;
+    transform-origin: 60px 95px;
+}
+
+@keyframes plantSway {
+    0%, 100% { transform: rotate(-1deg); }
+    50% { transform: rotate(2deg); }
+}
+
+/* Tree Breeze Animation (when not growing) */
+.tree-adult:not(.anim-tree-burst) {
+    animation: cuteBreeze 6s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+@keyframes cuteBreeze {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    33% {
+        transform: rotate(-0.8deg) scaleX(1.005);
+    }
+    66% {
+        transform: rotate(0.8deg) scaleX(0.995);
+    }
+}
+
+.tree-adult:not(.anim-tree-burst) .tree-body-group {
+    animation: bodyBreeze 5s ease-in-out infinite;
+    transform-origin: 60px 95px;
+}
+
+@keyframes bodyBreeze {
+    0%, 100% { transform: skewX(0deg); }
+    50% { transform: skewX(-1.5deg); }
+}
+
+/* Sprout Burst Motion (Seed -> Sprout) */
+.anim-sprout-burst {
+    animation: sproutBurst 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transform-origin: bottom center;
+}
+
+@keyframes sproutBurst {
+    0% {
+        transform: scaleY(0) scaleX(0.5);
+        opacity: 0;
+    }
+    40% {
+        transform: scaleY(1.25) scaleX(1.1) rotate(-5deg);
+        opacity: 1;
+    }
+    60% {
+        transform: scaleY(0.9) scaleX(0.95) rotate(3deg);
+    }
+    80% {
+        transform: scaleY(1.05) scaleX(1.02) rotate(-1deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Tree Burst Motion (Sprout -> Tree) */
+.anim-tree-burst {
+    animation: treeBurst 1.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transform-origin: bottom center;
+}
+
+@keyframes treeBurst {
+    0% {
+        transform: scale(0.2) translateY(30px);
+        opacity: 0;
+    }
+    35% {
+        transform: scale(1.15) translateY(-6px) rotate(3deg);
+        opacity: 1;
+    }
+    55% {
+        transform: scale(0.9) translateY(2px) rotate(-2deg);
+    }
+    75% {
+        transform: scale(1.04) translateY(-1px) rotate(0.5deg);
+    }
+    100% {
+        transform: scale(1) translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Decorator Pop-In Animation */
+.tree-decorator-item {
+    transform-origin: center;
+    animation: popInDecorator 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popInDecorator {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Miniature Tree Preview in Completed Books List */
+.book-accordion-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.completed-tree-preview {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #e2e8f0;
+    padding: 2px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.completed-tree-preview svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* ========== サポーター選択画面 ========== */
+.supporter-select-screen {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 8px;
+}
+
+.supporter-select-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    margin: 0;
+}
+
+.supporter-select-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+}
+
+.supporter-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 3px solid transparent;
+    border-radius: 16px;
+    padding: 10px 6px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+
+.supporter-option img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.supporter-option span {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.supporter-option:hover {
+    background: rgba(255,255,255,0.25);
+    transform: scale(1.04);
+}
+
+.supporter-option.selected {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.25);
+    transform: scale(1.06);
+}
+
+/* ========== サポーター変更ボタン ========== */
+.change-supporter-btn {
+    position: absolute;
+    bottom: 68px;
+    right: 60px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, background 0.15s;
+    z-index: 10;
+}
+
+.change-supporter-btn:hover {
+    transform: scale(1.12);
+    background: #fff;
+}
+
+/* ========== サポーター変更モーダル ========== */
+.supporter-change-modal-content {
+    max-width: 340px;
+    width: 92%;
+}
+
+.supporter-change-grid {
+    max-width: 100%;
+    margin: 12px 0;
+}
+
+.supporter-change-grid .supporter-option img {
+    width: 70px;
+    height: 70px;
+}
+
+/* サポーター変更モーダルを最前面に */
+#supporter-change-modal {
+    z-index: 1100;
+}
