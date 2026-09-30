@@ -550,34 +550,58 @@ function applySupporter(id) {
 }
 
 // --- Audio (BGM & SE) ---
-// Note: Actual filename on disk is assetsbgm.mp3 inside assets folder
 const bgm = new Audio('assets/assetsbgm.mp3');
 bgm.loop = true;
 bgm.load();
 
-// Placeholder SE paths - User will provide files later
-const seTap = new Audio('assets/se_tap.mp3'); // For buttons
-const seTalk = new Audio('assets/se_talk.mp3'); // For dialogue
-const seLevelUp = new Audio('assets/se_levelup.mp3'); // For level up
-const seExp = new Audio('assets/se_exp.mp3'); // For exp gain
+// --- SE: Audio オブジェクト方式（確実再生）---
+const seTap     = new Audio('assets/se_tap.mp3');
+const seTalk    = new Audio('assets/se_talk.mp3');
+const seLevelUp = new Audio('assets/se_levelup.mp3');
+const seExp     = new Audio('assets/se_exp.mp3');
 
-// Sound Helper
-function playSe(audio) {
-    // Clone to allow overlapping sounds or reset properly
-    const sound = audio.cloneNode();
-    sound.volume = 0.6; // Adjust volume as needed
-    sound.play().catch(() => { });
+[seTap, seTalk, seLevelUp, seExp].forEach(a => {
+    a.preload = 'auto';
+    a.volume  = 0.6;
+    a.load();
+});
+
+// アンロック済みフラグ
+let _audioUnlocked = false;
+
+function _unlockAllAudio() {
+    if (_audioUnlocked) return;
+    _audioUnlocked = true;
+    [seTap, seTalk, seLevelUp, seExp].forEach(a => {
+        const v = a.volume;
+        a.volume = 0;
+        a.play().then(() => { a.pause(); a.currentTime = 0; a.volume = v; })
+                 .catch(() => { a.volume = v; });
+    });
+    bgm.play().then(() => { bgm.pause(); bgm.currentTime = 0; }).catch(() => {});
 }
 
-// Unlock AudioContext on first interaction
-document.addEventListener('click', function unlockAudio() {
-    bgm.play().then(() => {
-        bgm.pause();
-        bgm.currentTime = 0;
-    }).catch(() => { });
-    // Also unlock SEs if needed (browsers usually unlock all audio)
-    document.removeEventListener('click', unlockAudio);
-}, { once: true });
+// 初回タッチ・クリックでアンロック
+document.addEventListener('touchstart', _unlockAllAudio, { once: true, passive: true });
+document.addEventListener('click',      _unlockAllAudio, { once: true });
+
+function playSe(audio) {
+    if (!audio) return;
+    const play = () => {
+        try {
+            audio.currentTime = 0;
+            audio.volume = 0.6;
+            audio.play().catch(() => {});
+        } catch(e) {}
+    };
+    if (_audioUnlocked) {
+        play();
+    } else {
+        // 未アンロックの場合はアンロック後に再生
+        _unlockAllAudio();
+        setTimeout(play, 80);
+    }
+}
 
 // --- DOM Elements ---
 const elements = {
@@ -1484,6 +1508,50 @@ function setupEventListeners() {
         });
     }
 
+    // ハンバーガーメニュー
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const helpDrawer   = document.getElementById('help-drawer');
+    const helpOverlay  = document.getElementById('help-overlay');
+    const helpClose    = document.getElementById('help-drawer-close');
+
+    function openHelpDrawer() {
+        helpDrawer.classList.remove('hidden');
+        helpOverlay.classList.remove('hidden');
+        requestAnimationFrame(() => helpDrawer.classList.add('open'));
+        hamburgerBtn.classList.add('open');
+    }
+
+    function closeHelpDrawer() {
+        helpDrawer.classList.remove('open');
+        hamburgerBtn.classList.remove('open');
+        setTimeout(() => {
+            helpDrawer.classList.add('hidden');
+            helpOverlay.classList.add('hidden');
+        }, 300);
+    }
+
+    if (hamburgerBtn) hamburgerBtn.addEventListener('click', () => { playSe(seTap); openHelpDrawer(); });
+    if (helpClose)    helpClose.addEventListener('click',    () => { playSe(seTap); closeHelpDrawer(); });
+    if (helpOverlay)  helpOverlay.addEventListener('click',  () => closeHelpDrawer());
+
+    // Q&A アコーディオン
+    document.querySelectorAll('.qa-question').forEach(btn => {
+        btn.addEventListener('click', () => {
+            playSe(seTap);
+            const answer = btn.nextElementSibling;
+            const isOpen = btn.classList.contains('open');
+            // 他を閉じる
+            document.querySelectorAll('.qa-question.open').forEach(b => {
+                b.classList.remove('open');
+                b.nextElementSibling.classList.remove('open');
+            });
+            if (!isOpen) {
+                btn.classList.add('open');
+                answer.classList.add('open');
+            }
+        });
+    });
+
     // BGM Toggle
     if (elements.introMusicToggle) {
         elements.introMusicToggle.addEventListener('click', (e) => {
@@ -1623,8 +1691,8 @@ function setupEventListeners() {
 
     elements.btnStopSession.addEventListener('mousedown', startPress);
     elements.btnStopSession.addEventListener('mouseup', endPress);
-    elements.btnStopSession.addEventListener('touchstart', startPress);
-    elements.btnStopSession.addEventListener('touchend', endPress);
+    elements.btnStopSession.addEventListener('touchstart', startPress, { passive: true });
+    elements.btnStopSession.addEventListener('touchend', endPress, { passive: true });
 
     // Records Modal Tabs
     const tabCurrent = document.getElementById('tab-current-book');

@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#fdfcf8">
     <title>Reading Tree</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,9 +27,77 @@
                     <span class="level-text">Lv.<span id="level-display">1</span></span>
                     <span class="next-level-text">あと<span id="next-level-exp">100</span>EXP</span>
                 </div>
+                <button id="hamburger-btn" class="hamburger-btn" title="メニュー">
+                    <span></span><span></span><span></span>
+                </button>
             </div>
-
         </header>
+
+        <!-- ヘルプドロワー -->
+        <div id="help-drawer" class="help-drawer hidden">
+            <div class="help-drawer-inner">
+                <div class="help-drawer-header">
+                    <h2>メニュー</h2>
+                    <button id="help-drawer-close" class="help-drawer-close">✕</button>
+                </div>
+
+                <!-- 使い方 -->
+                <section class="help-section">
+                    <h3>📖 本アプリの使い方</h3>
+                    <ol class="help-list">
+                        <li>「読書開始」ボタンを押して読書タイマーをスタート</li>
+                        <li>読み終わったら「記録する」ボタンを押す</li>
+                        <li>読んだページ数を入力して記録</li>
+                        <li>読書するごとにEXPが貯まり、種が成長する</li>
+                        <li>1冊読み終えると木にフルーツが実る</li>
+                    </ol>
+                </section>
+
+                <div class="help-divider"></div>
+
+                <!-- 成長について -->
+                <section class="help-section">
+                    <h3>🌱 成長の仕組み</h3>
+                    <ul class="help-list">
+                        <li>読書するたびにEXPを獲得</li>
+                        <li>Lv.1（種）→ Lv.2〜5（芽）→ Lv.6〜（木）</li>
+                        <li>読むたびに葉っぱが1枚増える</li>
+                        <li>1冊を一気に読み切ると即MAXレベル（Lv.20）</li>
+                        <li>MAX Lv.は20</li>
+                    </ul>
+                </section>
+
+                <div class="help-divider"></div>
+
+                <!-- Q&A -->
+                <section class="help-section">
+                    <h3>❓ Q&amp;A</h3>
+                    <div class="qa-list">
+                        <div class="qa-item">
+                            <button class="qa-question">Q. 読書記録はどこで確認できる？</button>
+                            <p class="qa-answer">ホーム画面の「表示」ボタンから、読んだ本の履歴を確認できます。</p>
+                        </div>
+                        <div class="qa-item">
+                            <button class="qa-question">Q. サポーターは変更できる？</button>
+                            <p class="qa-answer">ホーム画面のサポーターイラスト右下にある ✏️ ボタンから変更できます。</p>
+                        </div>
+                        <div class="qa-item">
+                            <button class="qa-question">Q. データはどこに保存される？</button>
+                            <p class="qa-answer">このデバイスのブラウザ内（localStorage）に保存されます。ブラウザのデータを削除するとリセットされます。</p>
+                        </div>
+                        <div class="qa-item">
+                            <button class="qa-question">Q. 新しい本に変更するには？</button>
+                            <p class="qa-answer">1冊を読み終えると「新しい種を植える」ボタンが表示されます。押すと新しい本の設定ができます。</p>
+                        </div>
+                        <div class="qa-item">
+                            <button class="qa-question">Q. タイトルのBGMについて？</button>
+                            <p class="qa-answer">タイトル画面の🎵ボタンからBGMのオン・オフを切り替えられます。</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <div id="help-overlay" class="help-overlay hidden"></div>
 
         <!-- INTRO LAYER -->
         <div id="intro-layer" class="intro-layer hidden">
