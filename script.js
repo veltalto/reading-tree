@@ -555,65 +555,89 @@ const bgm = new Audio('assets/assetsbgm.mp3');
 bgm.loop = true;
 bgm.load();
 
-// --- SE: Audio オブジェクト方式（確実・シンプル）---
+// --- SE: Audio オブジェクト方式（BGMと完全分離）---
+// seTap/seTalk/seLevelUp/seExpをAudioオブジェクトとして定義
+// BGMボタンはSEに一切触れない設計にする
+
 const seTap     = new Audio('assets/se_tap.mp3');
 const seTalk    = new Audio('assets/se_talk.mp3');
 const seLevelUp = new Audio('assets/se_levelup.mp3');
 const seExp     = new Audio('assets/se_exp.mp3');
-const _allSE    = [seTap, seTalk, seLevelUp, seExp];
+const _seList   = [seTap, seTalk, seLevelUp, seExp];
 
-_allSE.forEach(a => { a.preload = 'auto'; a.volume = 0.6; a.load(); });
+// SE事前ロード
+_seList.forEach(a => { a.preload = 'auto'; a.volume = 0.6; a.load(); });
 
-let _seUnlocked = false;
+// SEアンロック済みフラグ
+let _seReady = false;
 
-// SEのみアンロック（BGMとは完全に分離）
-function _unlockSE() {
-    if (_seUnlocked) return;
-    _seUnlocked = true;
-    _allSE.forEach(a => {
-        const v = a.volume;
+// SEのみアンロック（BGM・AudioContextには一切触れない）
+function _prepareSE() {
+    if (_seReady) return Promise.resolve();
+    _seReady = true;
+    const jobs = _seList.map(a => {
+        const vol = a.volume;
         a.volume = 0;
-        a.play()
-         .then(() => { a.pause(); a.currentTime = 0; a.volume = v; })
-         .catch(() => { a.volume = v; });
+        return a.play()
+            .then(() => { a.pause(); a.currentTime = 0; a.volume = vol; })
+            .catch(() => { a.volume = vol; });
     });
+    return Promise.all(jobs);
 }
 
-// 初回タッチ・クリックでSEアンロック（BGMは触らない）
-document.addEventListener('touchstart', _unlockSE, { once: true, passive: true });
-document.addEventListener('click',      _unlockSE, { once: true });
+// BGMボタン以外の最初のタッチでSEをアンロック
+// BGMボタンのタッチでは呼ばれない（BGMボタンのハンドラでは呼ばない）
+document.addEventListener('touchstart', function onFirstTouch(e) {
+    // BGMボタンのタッチは無視
+    if (e.target && e.target.id === 'intro-music-toggle') return;
+    _prepareSE();
+    document.removeEventListener('touchstart', onFirstTouch);
+}, { passive: true });
+
+document.addEventListener('click', function onFirstClick(e) {
+    if (e.target && e.target.id === 'intro-music-toggle') return;
+    _prepareSE();
+    document.removeEventListener('click', onFirstClick);
+});
 
 function playSe(audio) {
     if (!audio) return;
     const doPlay = () => {
-        try { audio.currentTime = 0; audio.volume = 0.6; audio.play().catch(() => {}); }
-        catch(e) {}
+        try {
+            audio.currentTime = 0;
+            audio.volume = 0.6;
+            audio.play().catch(() => {});
+        } catch(e) {}
     };
-    if (_seUnlocked) {
+    if (_seReady) {
         doPlay();
     } else {
-        _unlockSE();
-        setTimeout(doPlay, 80);
+        _prepareSE().then(doPlay);
     }
 }
 
-// --- Wake Lock（読書中のスマホ自動ロック防止）---
+// --- Wake Lock（読書中の自動ロック防止）---
 let _wakeLock = null;
 
 async function _requestWakeLock() {
     if (!('wakeLock' in navigator)) return;
     try {
+        if (_wakeLock) return; // 既に取得済み
         _wakeLock = await navigator.wakeLock.request('screen');
+        _wakeLock.addEventListener('release', () => { _wakeLock = null; });
     } catch(e) {}
 }
 
 function _releaseWakeLock() {
-    if (_wakeLock) { _wakeLock.release().catch(() => {}); _wakeLock = null; }
+    if (_wakeLock) {
+        _wakeLock.release().catch(() => {});
+        _wakeLock = null;
+    }
 }
 
-// バックグラウンドから復帰したとき再取得
+// バックグラウンドから復帰時に再取得
 document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && state && state.isReading && !_wakeLock) {
+    if (!document.hidden && typeof state !== 'undefined' && state.isReading) {
         _requestWakeLock();
     }
 });
@@ -1573,7 +1597,7 @@ function setupEventListeners() {
     if (elements.introMusicToggle) {
         elements.introMusicToggle.addEventListener('click', (e) => {
             e.stopPropagation();
-            // BGMボタンはBGM操作のみ（SEは鳴らさない）
+            // BGMボタンはBGM操作のみ。SEは一切鳴らさない
             if (bgm.paused) {
                 bgm.play().catch(() => {});
                 elements.introMusicToggle.style.opacity = '1';
