@@ -550,6 +550,7 @@ function applySupporter(id) {
 }
 
 // --- Audio (BGM & SE) ---
+// Note: Actual filename on disk is assetsbgm.mp3 inside assets folder
 const bgm = new Audio('assets/assetsbgm.mp3');
 bgm.loop = true;
 bgm.load();
@@ -566,10 +567,10 @@ const seExp     = new Audio('assets/se_exp.mp3');
     a.load();
 });
 
-// アンロック済みフラグ
 let _audioUnlocked = false;
 
-function _unlockAllAudio() {
+// SEのみアンロック（BGMは含めない）
+function _unlockSE() {
     if (_audioUnlocked) return;
     _audioUnlocked = true;
     [seTap, seTalk, seLevelUp, seExp].forEach(a => {
@@ -578,12 +579,10 @@ function _unlockAllAudio() {
         a.play().then(() => { a.pause(); a.currentTime = 0; a.volume = v; })
                  .catch(() => { a.volume = v; });
     });
-    bgm.play().then(() => { bgm.pause(); bgm.currentTime = 0; }).catch(() => {});
 }
 
-// 初回タッチ・クリックでアンロック
-document.addEventListener('touchstart', _unlockAllAudio, { once: true, passive: true });
-document.addEventListener('click',      _unlockAllAudio, { once: true });
+document.addEventListener('touchstart', _unlockSE, { once: true, passive: true });
+document.addEventListener('click',      _unlockSE, { once: true });
 
 function playSe(audio) {
     if (!audio) return;
@@ -597,8 +596,7 @@ function playSe(audio) {
     if (_audioUnlocked) {
         play();
     } else {
-        // 未アンロックの場合はアンロック後に再生
-        _unlockAllAudio();
+        _unlockSE();
         setTimeout(play, 80);
     }
 }
@@ -699,6 +697,7 @@ function startSession() {
     if (changeBtn) changeBtn.style.display = 'none';
     applySupporter(state.supporterId || 0);
     generateReadingLeaves();
+    requestWakeLock(); // 読書中は画面ロックを防止
 
     updateTimerDisplay();
     if (state.timerInterval) clearInterval(state.timerInterval);
@@ -710,6 +709,7 @@ function startSession() {
 
 function stopSession() {
     clearInterval(state.timerInterval);
+    releaseWakeLock(); // 読書終了でWake Lock解除
     state.isReading = false;
     finishSession(); // Proceed to Result
 }
@@ -724,6 +724,30 @@ function formatTime(totalSeconds) {
     const s = totalSeconds % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
+
+// --- Wake Lock（読書中の画面ロック防止）---
+let _wakeLock = null;
+
+async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) return; // 非対応ブラウザはスキップ
+    try {
+        _wakeLock = await navigator.wakeLock.request('screen');
+    } catch(e) {}
+}
+
+function releaseWakeLock() {
+    if (_wakeLock) {
+        _wakeLock.release().catch(() => {});
+        _wakeLock = null;
+    }
+}
+
+// 画面復帰時に再取得（visibilitychangeでWakeLockが解除されるため）
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state.isReading && !_wakeLock) {
+        requestWakeLock();
+    }
+});
 
 function setupFocusLock() {
     document.addEventListener('visibilitychange', () => {
@@ -1555,15 +1579,16 @@ function setupEventListeners() {
     // BGM Toggle
     if (elements.introMusicToggle) {
         elements.introMusicToggle.addEventListener('click', (e) => {
-            playSe(seTap);
-            e.stopPropagation(); // Prevent bubbling issues
+            e.stopPropagation();
             if (bgm.paused) {
-                bgm.play().catch(e => console.log('BGM Play Error:', e));
+                bgm.play().catch(() => {});
                 elements.introMusicToggle.style.opacity = '1';
             } else {
                 bgm.pause();
                 elements.introMusicToggle.style.opacity = '0.5';
             }
+            // BGM操作後にSEを鳴らす（BGMと干渉しないよう少し遅らせる）
+            setTimeout(() => playSe(seTap), 50);
         });
     }
 
