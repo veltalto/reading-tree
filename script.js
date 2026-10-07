@@ -383,7 +383,8 @@ const state = {
     sessionTarget: 30, // mins or pages
     sessionStartTime: null,
     elapsedSeconds: 0,
-    timerInterval: null
+    timerInterval: null,
+    pausedDuration: 0
 };
 
 // --- Supporter Image Map ---
@@ -555,92 +556,81 @@ const bgm = new Audio('assets/assetsbgm.mp3');
 bgm.loop = true;
 bgm.load();
 
-// --- SE: Audio オブジェクト方式（BGMと完全分離）---
-// seTap/seTalk/seLevelUp/seExpをAudioオブジェクトとして定義
-// BGMボタンはSEに一切触れない設計にする
+// --- SE: AudioContext バッファ方式（スマホ遅延対策）---
+let audioCtx = null;
+const seBuffers = {};
+const SE_FILES = {
+    tap:     'assets/se_tap.mp3',
+    talk:    'assets/se_talk.mp3',
+    levelup: 'assets/se_levelup.mp3',
+    exp:     'assets/se_exp.mp3',
+};
 
-const seTap     = new Audio('assets/se_tap.mp3');
-const seTalk    = new Audio('assets/se_talk.mp3');
-const seLevelUp = new Audio('assets/se_levelup.mp3');
-const seExp     = new Audio('assets/se_exp.mp3');
-const _seList   = [seTap, seTalk, seLevelUp, seExp];
-
-// SE事前ロード
-_seList.forEach(a => { a.preload = 'auto'; a.volume = 0.6; a.load(); });
-
-// SEアンロック済みフラグ
-let _seReady = false;
-
-// SEのみアンロック（BGM・AudioContextには一切触れない）
-function _prepareSE() {
-    if (_seReady) return Promise.resolve();
-    _seReady = true;
-    const jobs = _seList.map(a => {
-        const vol = a.volume;
-        a.volume = 0;
-        return a.play()
-            .then(() => { a.pause(); a.currentTime = 0; a.volume = vol; })
-            .catch(() => { a.volume = vol; });
-    });
-    return Promise.all(jobs);
+function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
 }
 
-// BGMボタン以外の最初のタッチでSEをアンロック
-// BGMボタンのタッチでは呼ばれない（BGMボタンのハンドラでは呼ばない）
-document.addEventListener('touchstart', function onFirstTouch(e) {
-    // BGMボタンのタッチは無視
-    if (e.target && e.target.id === 'intro-music-toggle') return;
-    _prepareSE();
-    document.removeEventListener('touchstart', onFirstTouch);
-}, { passive: true });
-
-document.addEventListener('click', function onFirstClick(e) {
-    if (e.target && e.target.id === 'intro-music-toggle') return;
-    _prepareSE();
-    document.removeEventListener('click', onFirstClick);
-});
-
-function playSe(audio) {
-    if (!audio) return;
-    const doPlay = () => {
-        try {
-            audio.currentTime = 0;
-            audio.volume = 0.6;
-            audio.play().catch(() => {});
-        } catch(e) {}
-    };
-    if (_seReady) {
-        doPlay();
-    } else {
-        _prepareSE().then(doPlay);
-    }
-}
-
-// --- Wake Lock（読書中の自動ロック防止）---
-let _wakeLock = null;
-
-async function _requestWakeLock() {
-    if (!('wakeLock' in navigator)) return;
+async function loadSeBuffer(key, url) {
     try {
-        if (_wakeLock) return; // 既に取得済み
-        _wakeLock = await navigator.wakeLock.request('screen');
-        _wakeLock.addEventListener('release', () => { _wakeLock = null; });
+        const ctx = getAudioCtx();
+        const res = await fetch(url);
+        const arr = await res.arrayBuffer();
+        seBuffers[key] = await ctx.decodeAudioData(arr);
     } catch(e) {}
 }
 
-function _releaseWakeLock() {
-    if (_wakeLock) {
-        _wakeLock.release().catch(() => {});
-        _wakeLock = null;
-    }
+// SEをすべて事前ロード
+Object.entries(SE_FILES).forEach(([key, url]) => loadSeBuffer(key, url));
+
+function playSe(keyOrAudio) {
+    // keyOrAudio は文字列キー（'tap'など）または旧来のAudioオブジェクト
+    const key = typeof keyOrAudio === 'string' ? keyOrAudio : null;
+    try {
+        const ctx = getAudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+        const buf = key ? seBuffers[key] : null;
+        if (buf) {
+            const src = ctx.createBufferSource();
+            const gain = ctx.createGain();
+            gain.gain.value = 0.6;
+            src.buffer = buf;
+            src.connect(gain);
+            gain.connect(ctx.destination);
+            src.start(0);
+        } else if (!key) {
+            // フォールバック: 旧Audioオブジェクト
+            const sound = keyOrAudio.cloneNode();
+            sound.volume = 0.6;
+            sound.play().catch(() => {});
+        }
+    } catch(e) {}
 }
 
-// バックグラウンドから復帰時に再取得
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && typeof state !== 'undefined' && state.isReading) {
-        _requestWakeLock();
-    }
-});
+// SE呼び出しを文字列キーに統一するエイリアス
+const seTap     = 'tap';
+const seTalk    = 'talk';
+const seLevelUp = 'levelup';
+const seExp     = 'exp';
+
+// 初回タップでAudioContext解除 + SEバッファ再ロード
+document.addEventListener('touchstart', function unlockAudio() {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    bgm.play().then(() => { bgm.pause(); bgm.currentTime = 0; }).catch(() => {});
+    // バッファが未ロードなら再試行
+    Object.entries(SE_FILES).forEach(([key, url]) => {
+        if (!seBuffers[key]) loadSeBuffer(key, url);
+    });
+    document.removeEventListener('touchstart', unlockAudio);
+}, { once: true, passive: true });
+
+document.addEventListener('click', function unlockAudioClick() {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    bgm.play().then(() => { bgm.pause(); bgm.currentTime = 0; }).catch(() => {});
+    document.removeEventListener('click', unlockAudioClick);
+}, { once: true });
 
 // --- DOM Elements ---
 const elements = {
@@ -731,6 +721,7 @@ function startSession() {
     state.isReading = true;
     state.sessionStartTime = Date.now();
     state.elapsedSeconds = 0;
+    state.pausedDuration = 0;
 
     elements.concentrationLayer.classList.remove('hidden');
     elements.header.classList.add('hidden');
@@ -738,12 +729,14 @@ function startSession() {
     if (changeBtn) changeBtn.style.display = 'none';
     applySupporter(state.supporterId || 0);
     generateReadingLeaves();
-    _requestWakeLock();
 
     updateTimerDisplay();
     if (state.timerInterval) clearInterval(state.timerInterval);
     state.timerInterval = setInterval(() => {
-        state.elapsedSeconds++;
+        // Date.now()差分で計算するためバックグラウンドでも正確
+        state.elapsedSeconds = Math.floor(
+            (Date.now() - state.sessionStartTime - state.pausedDuration) / 1000
+        );
         updateTimerDisplay();
     }, 1000);
 }
@@ -751,7 +744,6 @@ function startSession() {
 function stopSession() {
     clearInterval(state.timerInterval);
     state.isReading = false;
-    _releaseWakeLock();
     finishSession(); // Proceed to Result
 }
 
@@ -771,19 +763,32 @@ function setupFocusLock() {
         if (!state.isReading) return;
 
         if (document.hidden) {
+            // バックグラウンド移行: インターバルを止めるが時刻を記録
+            state._hiddenAt = Date.now();
             if (state.timerInterval) {
                 clearInterval(state.timerInterval);
                 state.timerInterval = null;
             }
         } else {
-            alert(getSupporter().interruptMessage);
+            // フォアグラウンド復帰: バックグラウンド中も計測継続
+            // hiddenAt〜nowの時間はすでにpausedDurationに含まれないのでそのままカウント
+            state._hiddenAt = null;
 
+            // インターバル再開
             if (!state.timerInterval) {
                 state.timerInterval = setInterval(() => {
-                    state.elapsedSeconds++;
+                    state.elapsedSeconds = Math.floor(
+                        (Date.now() - state.sessionStartTime - state.pausedDuration) / 1000
+                    );
                     updateTimerDisplay();
                 }, 1000);
             }
+
+            // 表示を即時更新
+            state.elapsedSeconds = Math.floor(
+                (Date.now() - state.sessionStartTime - state.pausedDuration) / 1000
+            );
+            updateTimerDisplay();
         }
     });
 
@@ -1596,10 +1601,10 @@ function setupEventListeners() {
     // BGM Toggle
     if (elements.introMusicToggle) {
         elements.introMusicToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // BGMボタンはBGM操作のみ。SEは一切鳴らさない
+            playSe(seTap);
+            e.stopPropagation(); // Prevent bubbling issues
             if (bgm.paused) {
-                bgm.play().catch(() => {});
+                bgm.play().catch(e => console.log('BGM Play Error:', e));
                 elements.introMusicToggle.style.opacity = '1';
             } else {
                 bgm.pause();
