@@ -877,7 +877,8 @@ function saveResult() {
         date: new Date().toISOString(),
         pages: pages,
         note: note,
-        exp: expGain
+        exp: expGain,
+        readingSeconds: state.elapsedSeconds
     };
     state.leaves.push(newLeaf);
 
@@ -885,14 +886,15 @@ function saveResult() {
 
     playSe(seExp);
 
-    let alertMsg = `記録完了！\nEXP +${expGain}\n葉っぱが生まれました！\n(現在 ${state.currentBookReadPages} / ${state.totalBookPages} ページ)`;
+    const timeStr = formatBookTime(state.elapsedSeconds);
+    let alertMsg = `記録完了！\n読書時間: ${timeStr}\nEXP +${expGain}\n葉っぱが生まれました！\n(現在 ${state.currentBookReadPages} / ${state.totalBookPages} ページ)`;
     if (isOneSession) {
-        alertMsg = `🏆 一冊を一気に読み切りました！\nMAX レベル Lv.${CONFIG.LEVEL_MAX} に到達！\n立派な木が育ちました！`;
+        alertMsg = `🏆 一冊を一気に読み切りました！\n読書時間: ${timeStr}\nMAX レベル Lv.${CONFIG.LEVEL_MAX} に到達！\n立派な木が育ちました！`;
         treeBurstQueued = true;
     } else if (willComplete && hasCompletionBonus) {
-        alertMsg = `📖 本を読み終えました！読了ボーナスEXP（+${expGain - normalExp}）が加算されました！\n記録完了！\nEXP +${expGain}\n葉っぱが生まれました！`;
+        alertMsg = `📖 本を読み終えました！\n読書時間: ${timeStr}\n読了ボーナスEXP（+${expGain - normalExp}）が加算されました！\nEXP +${expGain}\n葉っぱが生まれました！`;
     } else if (willComplete) {
-        alertMsg = `📖 本を読み終えました！おめでとうございます！\n記録完了！\nEXP +${expGain}\n葉っぱが生まれました！`;
+        alertMsg = `📖 本を読み終えました！おめでとうございます！\n読書時間: ${timeStr}\nEXP +${expGain}\n葉っぱが生まれました！`;
     }
     alert(alertMsg);
 
@@ -961,7 +963,8 @@ function checkBookFinished() {
             totalPages: state.totalBookPages,
             completedDate: new Date().toISOString(),
             leaves: [...state.leaves],
-            treeVisuals: state.treeVisuals ? { ...state.treeVisuals } : getDefaultVisuals()
+            treeVisuals: state.treeVisuals ? { ...state.treeVisuals } : getDefaultVisuals(),
+            totalReadingSeconds: state.leaves.reduce((sum, l) => sum + (l.readingSeconds || 0), 0)
         };
         if (!state.completedBooks) {
             state.completedBooks = [];
@@ -1127,6 +1130,7 @@ function renderCurrentBookRecords() {
                 <div class="record-header">
                     <span>${dateStr}</span>
                     <span class="record-pages">${leaf.pages}ページ</span>
+                    <span class="record-time">⏱ ${formatTime(leaf.readingSeconds || 0)}</span>
                 </div>
                 <div class="record-note">${escapeHtml(leaf.note || '（メモなし）')}</div>
             `;
@@ -1174,6 +1178,7 @@ function renderCompletedBooksRecords() {
                 <div class="book-accordion-title">🌳 ${escapeHtml(book.title)}</div>
                 <div class="book-accordion-meta">
                     <span>合計 ${book.totalPages} ページ</span>
+                    <span>⏱ ${formatBookTime(book.totalReadingSeconds || 0)}</span>
                     <span class="book-accordion-meta-date">読了: ${dateStr}</span>
                 </div>
             </div>
@@ -1202,6 +1207,7 @@ function renderCompletedBooksRecords() {
                     <div class="nested-record-header">
                         <span>${leafDateStr}</span>
                         <span class="nested-record-pages">${leaf.pages}ページ</span>
+                        <span class="nested-record-time">⏱ ${formatTime(leaf.readingSeconds || 0)}</span>
                     </div>
                     <div class="nested-record-note">${escapeHtml(leaf.note || '（メモなし）')}</div>
                 `;
@@ -1230,6 +1236,17 @@ function renderCompletedBooksRecords() {
     });
 }
 
+
+// 合計読書時間のフォーマット（〇時間〇分 or 〇分）
+function formatBookTime(seconds) {
+    if (!seconds || seconds <= 0) return '記録なし';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}時間${m}分`;
+    if (m > 0) return `${m}分${s}秒`;
+    return `${s}秒`;
+}
 
 function escapeHtml(text) {
     if (!text) return '';
